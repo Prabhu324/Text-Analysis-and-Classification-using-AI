@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        #topic-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        #topic-list li {
+            margin: 5px 0;
+        }
+        #article-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        #article-list li {
+            margin: 5px 0;
+            padding: 10px;
+            border : 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select a Topic</h1>
+    <ul id="topic-list">
+        {% for category in categories %}
+            <li><a href="#" onclick="fetchArticles('{{ category }}')">{{ category }}</a></li>
+        {% endfor %}
+    </ul>
+    <h2>Articles</h2>
+    <ul id="article-list"></ul>
+
+    <script>
+        function fetchArticles(category) {
+            fetch(`/articles/${category}`)
+                .then(response => response.json())
+                .then(data => {
+                    const articleList = document.getElementById('article-list');
+                    articleList.innerHTML = ''; // Clear previous articles
+                    data.forEach(article => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a href="${article.link}" target="_blank">${article.title}</a><p>${article.content}</p>`;
+                        articleList.appendChild(li);
+                    });
+                });
+        }
+    </script>
+</body>
+</html>
