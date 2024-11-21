@@ -1,0 +1,52 @@
+# train_model.py
+import joblib
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+# Load the dataset
+newsgroups = fetch_20newsgroups(subset='all')
+X = newsgroups.data  # The articles
+y = newsgroups.target  # The corresponding categories
+
+# Train the SVM model
+vectorizer = TfidfVectorizer()
+X_vectorized = vectorizer.fit_transform(X)
+model = SVC(kernel='linear')
+model.fit(X_vectorized, y)
+
+# Save the model and vectorizer
+joblib.dump(model, 'svm_model.pkl')
+joblib.dump(vectorizer, 'vectorizer.pkl')
+
+# Save the articles and their categories for later retrieval
+with open('articles.txt', 'w',  encoding='utf-8') as f:
+    for i in range(len(X)):
+        f.write(f"{y[i]}\t{X[i]}\n")  # Save category and article text
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_vectorized, y, test_size=0.2, random_state=42)
+
+# Train the model on the training set
+model.fit(X_train, y_train)
+
+# Make predictions on the testing set
+y_pred = model.predict(X_test)
+
+# Calculate and print accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.2f}")
+
+# Generate a classification report
+report = classification_report(y_test, y_pred, target_names=newsgroups.target_names)
+print("\nClassification Report:\n")
+print(report)
+
+# Plot the confusion matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(conf_matrix, display_labels=newsgroups.target_names)
+disp.plot(xticks_rotation='vertical', cmap=plt.cm.Blues)
+plt.title("Confusion Matrix")
+plt.show()
